@@ -1,0 +1,15 @@
+index.html
+ChangeLog
+Build.PL
+LICENSE
+Makefile.PL
+MANIFEST
+README
+lib/CAM/SOAPClient.pm
+t/client.t
+t/server.t
+t/test.wsdl
+t/server/soap.pl
+t/server/soap.cgi
+t/server/Example.pm
+META.yml

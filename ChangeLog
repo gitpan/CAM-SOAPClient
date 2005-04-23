@@ -1,0 +1,67 @@
+2005-04-22 23:20  chris
+
+	* Build.PL, LICENSE, MANIFEST, README, index.html,
+	  lib/CAM/SOAPClient.pm: v1.13 Relicensing Documentation
+
+2004-09-16 10:42  chris
+
+	* MANIFEST: Add missing MANIFEST entries
+
+2004-09-16 10:40  chris
+
+	* Makefile.PL, lib/CAM/SOAPClient.pm, t/server.t, t/server/soap.pl:
+
+	  v1.12  - Add optional timeout flag (defaults to 6 hrs)  - Fix
+	  port problem with server test
+
+2003-09-16 11:49  chris
+
+	* Build.PL, LICENSE, MANIFEST, Makefile.PL, README, SOAPClient.pm,
+	  index.html, test.pl, lib/CAM/SOAPClient.pm, t/client.t,
+	  t/server.t, t/test.wsdl, t/server/Example.pm, t/server/soap.cgi,
+	  t/server/soap.pl: v1.11 Update for the new build and license
+	  infrastructure Add real-world tests Add lots of documentation
+
+2003-08-08 15:28  chris
+
+	* SOAPClient.pm, test.pl:    v1.10
+	  Add ability to return all data instead of just paths Add
+	  hadFault() boolean test Add synopsis documentation
+
+2003-06-24 13:31  chris
+
+	* SOAPClient.pm: Fix a little bug
+
+2003-06-24 12:56  chris
+
+	* MANIFEST, SOAPClient.pm, test.pl: v1.0.2 Add support for WSDL
+
+2003-05-06 12:06  chris
+
+	* SOAPClient.pm, test.pl: Still v1.0.1: Hugely improved the
+	  handling of arrays returned from call(), and added many tests to
+	  confirm that functionality.
+
+2003-05-06 10:00  chris
+
+	* SOAPClient.pm: v1.0.1 Change call() to return arrays of data.
+	  This may be a mistake...
+
+2003-04-22 13:46  chris
+
+	* SOAPClient.pm: Add getLastFaultString() method
+
+2003-04-21 16:00  chris
+
+	* SOAPClient.pm, test.pl: typo fixes
+
+2003-04-21 15:58  chris
+
+	* MANIFEST, Makefile.PL, README, SOAPClient.pm, test.pl: Initial
+	  revision
+
+2003-04-21 15:58  chris
+
+	* MANIFEST, Makefile.PL, README, SOAPClient.pm, test.pl: initial
+	  import
+
