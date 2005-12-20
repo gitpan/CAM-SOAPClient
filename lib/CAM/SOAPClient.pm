@@ -1,5 +1,14 @@
 package CAM::SOAPClient;
 
+require 5.005_62;
+use strict;
+use warnings;
+use SOAP::Lite;
+
+our $VERSION = '1.14';
+
+=for stopwords wsdl
+
 =head1 NAME
 
 CAM::SOAPClient - SOAP interaction tools
@@ -14,72 +23,58 @@ under the same terms as Perl itself.
 =head1 SYNOPSIS
 
   use CAM::SOAPClient;
-  my $client = CAM::SOAPClient->new(wsdl => "http://www.clotho.com/staff.wsdl");
-  my ($fname, $lname) = $client->call("fetchEmployee", '[firstName,lastName]',
+  my $client = CAM::SOAPClient->new(wsdl => 'http://www.clotho.com/staff.wsdl');
+  my ($fname, $lname) = $client->call('fetchEmployee', '[firstName,lastName]',
                                       ssn => '000-00-0000');
-  my $record = $client->call("fetchEmployee", undef, ssn => '000-00-0000');
-  my @addresses = $client->call("allEmployees", "@email");
+  my $record = $client->call('fetchEmployee', undef, ssn => '000-00-0000');
+  my @addresses = $client->call('allEmployees', '@email');
   
-  my $firstbudget = $client->call("listClientProjects", 
+  my $firstbudget = $client->call('listClientProjects', 
                                   '/client/projects/project/budget');
   
   if ($client->hadFault()) {
-     die("SOAP Fault: " . $client->getLastFaultString() . "\n");
+     die('SOAP Fault: ' . $client->getLastFaultString() . "\n");
   }
 
 =head1 DESCRIPTION
 
 This library offers some basic tools to simplify the creation of SOAP
-client implementations.  It is intended to be subclassed.
+client implementations.  It is intended to be subclassed, but works
+fine as-is too.
 
-The purpose for this module is the complexity of SOAP::Lite.  That
-module makes easy things really easy and hard things possible, but
-really obscure.  The problem is that the easy things are often too
-basic.  This module makes normal SOAP/WSDL activities easier by hiding
-some of the weirdness of SOAP::Lite.
-
-=cut
-
-#--------------------------------#
-
-require 5.005_62;
-use strict;
-use warnings;
-use SOAP::Lite;
-
-our $VERSION = '1.13';
-
-#--------------------------------#
+The purpose for this module is to abstract the complexity of
+SOAP::Lite.  That module makes easy things really easy and hard things
+possible, but really obscure.  The problem is that the easy things are
+often too basic.  This module makes typical SOAP and WSDL activities
+easier by hiding some of the weirdness of SOAP::Lite.
 
 =head1 METHODS
 
-=over 4
+=over
 
-=cut
+=item $pkg->new([opts], $uri)
 
-#--------------------------------#
+=item $pkg->new([opts], $uri, $proxy)
 
-=item new [opts] URI
+=item $pkg->new([opts], $uri, $proxy, $username, $password)
 
-=item new [opts] URI, PROXY
+=item $pkg->new([opts], wsdl => $url)
 
-=item new [opts] URI, PROXY, USERNAME, PASSWORD
+=item $pkg->new([opts], wsdl => $url, $username, $password)
 
-=item new [opts] wsdl => URL
+Create a connection instance.  The C<$proxy> is not required here, but
+if not specified it must be set later via C<setProxy()>.  Optionally
+(and recommended) you can specify a WSDL C<$url> instead of a C<$uri> and
+C<$proxy>.
 
-=item new [opts] wsdl => URL, USERNAME, PASSWORD
-
-Create a connection instance.  The proxy is not required here, but if
-not specified it must be set later via setProxy().  Optionally, you
-can use a WSDL URL instead of a URI and proxy.  The username and
-password may not be needed at all for some applications.  There are
-included here for convenience, since many applications do need them.
+If a C<$username> is specified, then the C<$username> and C<$password>
+are simply passed to C<setUserPass()>.
 
 The options are as follows:
 
 =over
 
-=item timeout => seconds
+=item timeout => $seconds
 
 This defaults to 6 hours.
 
@@ -95,7 +90,7 @@ sub new
               );
    while (@_ > 0)
    {
-      if ($_[0] eq "timeout")
+      if ($_[0] eq 'timeout')
       {
          my $key = shift;
          my $val = shift;
@@ -112,8 +107,10 @@ sub new
    my $user = shift;
    my $pass = shift;
 
+   return if (!$uri);
+
    my $soap = SOAP::Lite  -> on_fault( sub {} );
-   my $self = bless({
+   my $self = bless {
       %cfg,
       services => {},
       soap => $soap,
@@ -122,15 +119,14 @@ sub new
       global_uri => undef,
       proxies => {},
       uris => {},
-   }, $pkg);
+   }, $pkg;
 
-   if ($uri && $uri eq "wsdl")
+   if ($uri eq 'wsdl')
    {
       $self->setWSDL($proxy);
    }
    else
    {
-      return undef if (!$uri);
       $self->setURI($uri);
       if ($proxy)
       {
@@ -144,9 +140,8 @@ sub new
    }
    return $self;
 }
-#--------------------------------#
 
-=item setWSDL URL
+=item $self->setWSDL($url)
 
 Loads a Web Service Description Language file describing the SOAP service.
 
@@ -171,9 +166,8 @@ sub setWSDL
 
    return $self;
 }
-#--------------------------------#
 
-=item setURI URI
+=item $self->setURI($uri)
 
 Specifies the URI for the SOAP server.
 
@@ -187,9 +181,8 @@ sub setURI
    $self->{global_uri} = $uri;
    return $self;
 }
-#--------------------------------#
 
-=item setProxy PROXY
+=item $self->setProxy($proxy)
 
 Specifies the URL for the SOAP server.
 
@@ -203,11 +196,10 @@ sub setProxy
    $self->{global_proxy} = $proxy;
    return $self;
 }
-#--------------------------------#
 
-=item setUserPass USERNAME, PASSWORD
+=item $self->setUserPass($username, $password)
 
-Specifies the username and password to use on the SOAP server.
+Specifies the C<$username> and C<$password> to use on the SOAP server.
 
 =cut
 
@@ -221,9 +213,8 @@ sub setUserPass
    $self->{auth}->{password} = $password;
    return $self;
 }
-#--------------------------------#
 
-=item getLastSOM
+=item $self->getLastSOM()
 
 Returns the SOAP::SOM object for the last query.
 
@@ -235,9 +226,8 @@ sub getLastSOM
 
    return $self->{last_som};
 }
-#--------------------------------#
 
-=item hadFault
+=item $self->hadFault()
 
 Returns a boolean indicating whether the last call() resulted in a fault.
 
@@ -248,11 +238,32 @@ sub hadFault
    my $self = shift;
 
    my $som = $self->getLastSOM();
-   return $som && ref($som) && $som->fault();
+   return $som && (ref $som) && $som->fault();
 }
-#--------------------------------#
 
-=item getLastFaultString
+=item $self->getLastFaultCode()
+
+Returns the fault code from the last query, or C<(none)> if the last
+query did not result in a fault.
+
+=cut
+
+sub getLastFaultCode
+{
+   my $self = shift;
+
+   my $som = $self->getLastSOM();
+   if ($som && (ref $som) && $som->can('faultcode') && $som->fault())
+   {
+      return $som->faultcode();
+   }
+   else
+   {
+      return '(none)';
+   }
+}
+
+=item $self->getLastFaultString()
 
 Returns the fault string from the last query, or C<(none)> if the last
 query did not result in a fault.
@@ -264,22 +275,21 @@ sub getLastFaultString
    my $self = shift;
 
    my $som = $self->getLastSOM();
-   if ($som && ref($som) && $som->can("faultstring") && $som->fault())
+   if ($som && (ref $som) && $som->can('faultstring') && $som->fault())
    {
       return $som->faultstring();
    }
    else
    {
-      return "(none)";
+      return '(none)';
    }
 }
-#--------------------------------#
 
-=item call METHOD, undef, KEY => VALUE, KEY => VALUE, ...
+=item $self->call($method, undef, $key1 => $value1, $key2 => $value, ...)
 
-=item call METHOD, XPATH, KEY => VALUE, KEY => VALUE, ...
+=item $self->call($method, $xpath, $key1 => $value1, $key2 => $value, ...)
 
-=item call METHOD, XPATH_ARRAYREF, KEY => VALUE, KEY => VALUE, ...
+=item $self->call($method, $xpath_arrayref, $key1 => $value1, $key2 => $value, ...)
 
 Invoke the named SOAP method.  The return values are indicated in the
 second argument, which can be undef, a single scalar or a list of
@@ -348,16 +358,19 @@ sub call
 
    my @rets;
 
-   if ($paths && !ref($paths))
+   if ($paths && !ref $paths)
    {
       $paths = [$paths];
    }
 
    my $uri = $self->{uris}->{$method} || $self->{global_uri};
    my $proxy = $self->{proxies}->{$method} || $self->{global_proxy};
-   unless ($uri && $proxy)
+   if (!$uri || !$proxy)
    {
-      return wantarray ? () : undef;
+      # Create a minimal SOAP fault from scratch
+      $self->_setFault('Client',
+                       "Attempted to call method '$method' which lacks a URI or proxy.  Are you sure you called the right method?");
+      return;
    }
    
    my $som = $self->{soap}
@@ -367,11 +380,18 @@ sub call
                            (timeout => $self->{timeout}) : ())
                           )
                   ->call($method, $self->request($self->loginParams(), @args));
+
+   if (!$som || !ref $som)
+   {
+      $self->_setFault('Client', 'Communication failure');
+      return;
+   }
+
    $self->{last_som} = $som;
 
-   if (!$som || !ref($som) || $som->fault)
+   if ($som->fault)
    {
-      return wantarray ? () : undef;
+      return;
    }
 
    if (!defined $paths)
@@ -383,11 +403,11 @@ sub call
       foreach my $origpath (@$paths)
       {
          my $path = $origpath;
-         my $isArray = ($path =~ s/^\@//);
+         my $is_array = ($path =~ s/\A\@//xms);
          
-         return undef if (!$som->match("/Envelope/Body/[1]/$path"));
+         return if (!$som->match("/Envelope/Body/[1]/$path"));
          my @values = $som->valueof();
-         if ($isArray)
+         if ($is_array)
          {
             if (@$paths == 1)
             {
@@ -406,11 +426,31 @@ sub call
    }
    return wantarray ? @rets : $rets[0];
 }
-#--------------------------------#
 
-=item loginParams
 
-This is intened to return a hash of all the required parameters shared
+sub _setFault
+{
+   my $self   = shift;
+   my $code   = shift;
+   my $string = shift;
+
+   $self->{last_som} = SOAP::Deserializer->deserialize(<<"EOF"
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+ <Body>
+  <Fault>
+   <faultcode>$code</faultcode>
+   <faultstring>$string</faultstring>
+  </Fault>
+ </Body>
+</Envelope>
+EOF
+   );
+   return $self;
+}
+
+=item $self->loginParams()
+
+This is intended to return a hash of all the required parameters shared
 by all SOAP requests.  This version returns the contents of
 C<%{$soap->{auth}}>.  Some subclasses may wish to override this, while
 others may wish to simply add more to that hash.
@@ -422,11 +462,10 @@ sub loginParams
    my $self = shift;
    return (%{$self->{auth}});
 }
-#--------------------------------#
 
-=item request KEY => VALUE, KEY => VALUE, ...
+=item $self->request($key1 => $value1, $key2 => $value2, ...)
 
-=item request SOAPDATA, SOAPDATA, ...
+=item $self->request($soapdata1, $soapdata2, ...)
 
 Helper routine which wraps its key-value pair arguments in SOAP::Data
 objects, if they are not already in that form.
@@ -442,7 +481,7 @@ sub request
    while (@_ > 0)
    {
       my $var = shift;
-      if ($var && ref($var) && ref($var) eq "SOAP::Data")
+      if ($var && (ref $var) && (ref $var) eq 'SOAP::Data')
       {
          push @return, $var;
       }
@@ -453,13 +492,30 @@ sub request
    }
    return @return;
 }
-#--------------------------------#
 
 1;
 __END__
 
 =back
 
+=head1 SEE ALSO
+
+SOAP::Lite
+
+CAM::SOAPApp
+
+=head1 CODING
+
+This module has over 80% code coverage in its regression tests, as
+reported by L<Devel::Cover> via C<perl Build testcover>.
+
+With three policy exceptions, this module passes Perl Best Practices
+guidelines, as enforced by L<Perl::Critic> v0.13.
+
 =head1 AUTHOR
 
 Clotho Advanced Media, I<cpan@clotho.com>
+
+Primary developer: Chris Dolan
+
+=cut

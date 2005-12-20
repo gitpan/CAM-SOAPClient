@@ -60,7 +60,7 @@ CAM::SOAPClient style:
      my ($ssn, $uri, $proxy) = @_;
      return CAM::SOAPClient
                  -> new($uri, $proxy)
-                 -> call("getEmployeeData", "phone", ssn => $ssn);
+                 -> call('getEmployeeData', 'phone', ssn => $ssn);
   }
 
 Equivalent SOAP::Lite style:
@@ -70,12 +70,12 @@ Equivalent SOAP::Lite style:
      my $som = SOAP::Lite
                  -> uri($uri)
                  -> proxy($proxy)
-                 -> call("getEmployeeData", SOAP::Data->name(ssn => $ssn));
+                 -> call('getEmployeeData', SOAP::Data->name(ssn => $ssn));
      if (ref $som) {
-        return $som->valueof("/Envelope/Body/[1]/phone");
+        return $som->valueof('/Envelope/Body/[1]/phone');
      } else {
-        return undef;
+        return;
      }
   }
 
-The simplistic server implementation is in t/server/Example.pm.
+The simplistic server implementation is in t/lib/Example.pm

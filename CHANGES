@@ -1,0 +1,12 @@
+Revision history for Perl module CAM::SOAPClient
+
+1.14  20 Dec 2005
+      [ENHANCEMENTS]
+      - Added getLastFaultCode method
+      [FIXES]
+      - When client fails to send message, a new Fault is constructed
+      - On server error, a new Fault is constructed
+        Previously, a server error looked like an empty success
+
+1.13  22 Apr 2005
+      First public release

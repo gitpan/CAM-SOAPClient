@@ -18,4 +18,14 @@ sub getEmployeeData {
                          phone => "212-555-1212");
 }
 
+sub fail {
+   # Used to test client's handling of faults
+   die 'Test fault handling';
+}
+
+sub abort {
+   # Used to test client's handling of abrupt server departure
+   exit(0);
+}
+
 1;

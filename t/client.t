@@ -3,12 +3,13 @@
 use warnings;
 use strict;
 use Carp;
+use Data::Dumper;
 $SIG{__WARN__} = $SIG{__DIE__} = \&Carp::confess;
 
 BEGIN
 { 
-   use Test::More tests => 20;
-   use_ok("CAM::SOAPClient");
+   use Test::More tests => 23;
+   use_ok('CAM::SOAPClient');
 }
 
 package FakeSOAP;
@@ -48,37 +49,41 @@ sub proxy
 
 package main;
 
-my $response;
-my $obj = CAM::SOAPClient->new("http://www.foo.com/No/Such/Class/", "foo");
-ok($obj, "Constructor");
+my $obj = CAM::SOAPClient->new('http://www.foo.com/No/Such/Class/', 'foo');
+ok($obj, 'Constructor');
 
 # HACK! ruin the SOAP object for the sake of the test
-$obj->{soap} = bless({}, "FakeSOAP");
+$obj->{soap} = bless({}, 'FakeSOAP');
 
 my $all = {data => [{id=>4},{id=>6},{id=>7},{id=>10},{id=>20}], userID => 12};
 my @tests = (
-             "undef" => $all, [$all],
-             "'data/item/id'"   => 4, [4],
-             "['data/item/id']" => 4, [4],
-             "'\@data/item/id'"   => 4, [4,6,7,10,20],
-             "['\@data/item/id']"   => 4, [4,6,7,10,20],
-             "['data/item/id','userID']" => 4, [4,12],
-             "['\@data/item/id','userID']" => [4,6,7,10,20], [[4,6,7,10,20],12],
-             "['userID', '\@data/item/id',]" => 12, [12,[4,6,7,10,20]],
-             );
-while (@tests > 0)
+   { request => undef,                       scalar => $all,          array => [$all]        },
+   { request => 'data/item/id',              scalar => 4,             array => [4]           },
+   { request => ['data/item/id'],            scalar => 4,             array => [4]           },
+   { request => '@data/item/id',             scalar => 4,             array => [4,6,7,10,20] },
+   { request => ['@data/item/id'],           scalar => 4,             array => [4,6,7,10,20] },
+   { request => ['data/item/id','userID'],   scalar => 4,             array => [4,12]        },
+   { request => ['@data/item/id','userID'],  scalar => [4,6,7,10,20], array => [[4,6,7,10,20],12] },
+   { request => ['userID', '@data/item/id'], scalar => 12,            array => [12,[4,6,7,10,20]] },
+);
+for my $test (@tests)
 {
-   my $spaths = shift @tests;
-   my $paths = eval $spaths;
-   $response = $obj->call("null", $paths);
-   is_deeply($response, shift @tests, "call scalar $spaths");
-   $response = [$obj->call("null", $paths)];
-   is_deeply($response, shift @tests, "call array  $spaths");
+   my $paths = $test->{request};
+   my $spaths = Data::Dumper->new([$paths])->Terse(1)->Indent(0)->Dump();
+   my $response = $obj->call('null', $paths);
+   is_deeply($response, $test->{scalar}, "call scalar $spaths");
+   $response = [$obj->call('null', $paths)];
+   is_deeply($response, $test->{array},  "call array  $spaths");
 
-   #use Data::Dumper;
    #print Dumper($obj->getLastSOM());
 }
 
-$obj = CAM::SOAPClient->new(wsdl => "file:t/test.wsdl");
-is($obj->{proxies}->{test}, "http://www.foo.com/test.cgi", "WSDL test - endpoint");
-is($obj->{uris}->{test}, "http://foo.com/test", "WSDL test - uri");
+$obj = CAM::SOAPClient->new(wsdl => 'file:t/test.wsdl');
+is($obj->{proxies}->{test}, 'http://www.foo.com/test.cgi', 'WSDL test - endpoint');
+is($obj->{uris}->{test}, 'http://foo.com/test', 'WSDL test - uri');
+
+is(CAM::SOAPClient->new(), undef, 'no uri specified');
+isnt(CAM::SOAPClient->new('http://localhost'), undef, 'no proxy specified');
+is_deeply({CAM::SOAPClient->new('http://localhost', undef, 'user', 'pass')->loginParams()}, {username => 'user', password => 'pass'}, 'username and password');
+
+

@@ -1,8 +1,8 @@
 ---
 name: CAM-SOAPClient
-version: 1.13
+version: 1.14
 author:
-  - Clotho Advanced Media, I<cpan@clotho.com>
+  - 'Clotho Advanced Media, I<cpan@clotho.com>'
 abstract: SOAP interaction tools
 license: perl
 requires:
@@ -15,5 +15,5 @@ build_requires:
 provides:
   CAM::SOAPClient:
     file: lib/CAM/SOAPClient.pm
-    version: 1.13
-generated_by: Module::Build version 0.2609
+    version: 1.14
+generated_by: Module::Build version 0.2611
