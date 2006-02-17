@@ -38,7 +38,11 @@ sub call
 </Envelope>
 EOF
 }
-sub uri
+sub ns  # for SOAP::Lite v0.66 and later
+{
+   return shift;
+}
+sub uri # for SOAP::Lite v0.60 and ealier
 {
    return shift;
 }

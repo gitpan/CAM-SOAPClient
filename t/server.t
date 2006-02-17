@@ -70,8 +70,9 @@ sub getPhoneNumber_CAM_SOAP
 sub getPhoneNumber_SOAPLite
 {
    my ($ssn, $uri, $proxy) = @_;
-   my $som = SOAP::Lite
-       -> uri($uri)
+   # The SOAP::Lite API changed in v0.65-beta7
+   my $soap = SOAP::Lite->can('ns') ? SOAP::Lite->ns($uri) : SOAP::Lite->uri($uri);
+   my $som = $soap 
        -> proxy($proxy)
        -> call('getEmployeeData', SOAP::Data->name(ssn => $ssn));
    if (ref $som)

@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use SOAP::Lite;
 
-our $VERSION = '1.14';
+our $VERSION = '1.15';
 
 =for stopwords wsdl
 
@@ -15,7 +15,7 @@ CAM::SOAPClient - SOAP interaction tools
 
 =head1 LICENSE
 
-Copyright 2005 Clotho Advanced Media, Inc., <cpan@clotho.com>
+Copyright 2006 Clotho Advanced Media, Inc., <cpan@clotho.com>
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
@@ -152,12 +152,16 @@ sub setWSDL
    my $self = shift;
    my $url = shift;
    
-   my $services = SOAP::Schema->schema($url)->parse()->services();
+   # The SOAP::Schema API changed as of SOAP::Lite v0.65-beta2
+   my $schema = SOAP::Schema->can('schema_url') ?
+       SOAP::Schema->schema_url($url) :
+       SOAP::Schema->schema($url);
+   my $services = $schema->parse()->services();
    #use Data::Dumper; print STDERR Dumper($services);
 
-   foreach my $class (values %$services)
+   foreach my $class (values %{$services})
    {
-      foreach my $method (keys %$class)
+      foreach my $method (keys %{$class})
       {
          $self->{proxies}->{$method} = $class->{$method}->{endpoint}->value();
          $self->{uris}->{$method} = $class->{$method}->{uri}->value();
@@ -373,13 +377,13 @@ sub call
       return;
    }
    
-   my $som = $self->{soap}
-                  ->uri($uri)
-                  ->proxy($proxy,
-                          ($self->{timeout} ? 
-                           (timeout => $self->{timeout}) : ())
-                          )
-                  ->call($method, $self->request($self->loginParams(), @args));
+   my $soap = SOAP::Lite->can('ns') ? $self->{soap}->ns($uri) : $self->{soap}->uri($uri);
+   my $som = $soap
+       ->proxy($proxy,
+               ($self->{timeout} ? 
+                (timeout => $self->{timeout}) : ())
+              )
+       ->call($method, $self->request($self->loginParams(), @args));
 
    if (!$som || !ref $som)
    {
@@ -400,7 +404,7 @@ sub call
    }
    else
    {
-      foreach my $origpath (@$paths)
+      foreach my $origpath (@{$paths})
       {
          my $path = $origpath;
          my $is_array = ($path =~ s/\A\@//xms);
@@ -409,7 +413,7 @@ sub call
          my @values = $som->valueof();
          if ($is_array)
          {
-            if (@$paths == 1)
+            if (@{$paths} == 1)
             {
                push @rets, @values;
             }
