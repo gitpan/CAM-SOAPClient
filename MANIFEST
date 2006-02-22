@@ -12,6 +12,6 @@ t/lib/Example.pm
 t/pod-coverage.t
 t/pod.t
 t/server.t
-t/soap.cgi
 t/soap.pl
 t/test.wsdl
+TODO

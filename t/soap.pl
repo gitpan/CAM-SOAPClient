@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 
+use warnings;
 use strict;
 use FindBin qw($Bin);
 use lib ("$Bin/lib");
@@ -8,7 +9,7 @@ BEGIN
 {
    eval {
       require CAM::SOAPApp;
-      CAM::SOAPApp->import();
+      CAM::SOAPApp->import(lenient => 1);
    };
    if ($EVAL_ERROR)
    {
@@ -22,8 +23,8 @@ my $PORT = shift || 9674;
 my $TIMEOUT = 600; # seconds
 
 # This server will auto-terminate after TIMEOUT seconds
-$SIG{ALRM} = sub{exit(0)};
-alarm($TIMEOUT);
+$SIG{ALRM} = sub{exit 0};
+alarm $TIMEOUT;
 
 SOAP::Transport::HTTP::Daemon
        -> new(LocalAddr => 'localhost', LocalPort => $PORT)

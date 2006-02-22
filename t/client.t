@@ -2,9 +2,8 @@
 
 use warnings;
 use strict;
-use Carp;
 use Data::Dumper;
-$SIG{__WARN__} = $SIG{__DIE__} = \&Carp::confess;
+#use Carp; $SIG{__WARN__} = $SIG{__DIE__} = \&Carp::confess;
 
 BEGIN
 { 
@@ -57,7 +56,7 @@ my $obj = CAM::SOAPClient->new('http://www.foo.com/No/Such/Class/', 'foo');
 ok($obj, 'Constructor');
 
 # HACK! ruin the SOAP object for the sake of the test
-$obj->{soap} = bless({}, 'FakeSOAP');
+$obj->{soap} = bless {}, 'FakeSOAP';
 
 my $all = {data => [{id=>4},{id=>6},{id=>7},{id=>10},{id=>20}], userID => 12};
 my @tests = (
@@ -89,5 +88,3 @@ is($obj->{uris}->{test}, 'http://foo.com/test', 'WSDL test - uri');
 is(CAM::SOAPClient->new(), undef, 'no uri specified');
 isnt(CAM::SOAPClient->new('http://localhost'), undef, 'no proxy specified');
 is_deeply({CAM::SOAPClient->new('http://localhost', undef, 'user', 'pass')->loginParams()}, {username => 'user', password => 'pass'}, 'username and password');
-
-

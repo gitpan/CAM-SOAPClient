@@ -1,3 +1,6 @@
+#!perl -w
+use warnings;
+use strict;
 use ExtUtils::MakeMaker;
 WriteMakefile(
               'NAME'		=> 'CAM::SOAPClient',

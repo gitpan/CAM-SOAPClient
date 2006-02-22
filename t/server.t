@@ -30,10 +30,10 @@ SKIP:
       );
    }
 
-   close($s);
+   close $s;
 
    my $uri   = 'http://localhost/Example';
-   my $proxy = "http://localhost:$PORT/soaptest/soap.cgi";
+   my $proxy = "http://localhost:$PORT/soaptest/soap.pl";
    my $ssn = '111-11-1111';
    
    is_deeply([getPhoneNumber_SOAPLite($ssn, $uri, $proxy)], ['212-555-1212'], 'SOAP::Lite');

@@ -5,9 +5,9 @@ use strict;
 use warnings;
 use SOAP::Lite;
 
-our $VERSION = '1.15';
+our $VERSION = '1.16';
 
-=for stopwords wsdl
+=for stopwords Lapworth subclassable wsdl
 
 =head1 NAME
 
@@ -33,20 +33,37 @@ under the same terms as Perl itself.
                                   '/client/projects/project/budget');
   
   if ($client->hadFault()) {
-     die('SOAP Fault: ' . $client->getLastFaultString() . "\n");
+     die 'SOAP Fault: ' . $client->getLastFaultString();
   }
 
 =head1 DESCRIPTION
 
-This library offers some basic tools to simplify the creation of SOAP
-client implementations.  It is intended to be subclassed, but works
+This module offers some basic tools to simplify the creation of SOAP
+client implementations.  It is intended to be subclassable, but works
 fine as-is too.
 
 The purpose for this module is to abstract the complexity of
 SOAP::Lite.  That module makes easy things really easy and hard things
-possible, but really obscure.  The problem is that the easy things are
-often too basic.  This module makes typical SOAP and WSDL activities
+possible, but quite obscure.  The problem is that the easy things are
+often too basic.  For example, calling remote methods with positional
+arguments is easy, but with named arguments is much harder.  Calling
+methods on a SOAP::Lite server is easy, but an Apache Axis server is
+much harder.  This module attempts to make typical SOAP and WSDL activities
 easier by hiding some of the weirdness of SOAP::Lite.
+
+The main method is call(), via which you can specify what remote
+method to invoke, what return values you want, and the named arguments
+you want to pass.  See below for more detail.
+
+This package has been tested against servers running SOAP::Lite,
+Apache Axis, and PEAR SOAP.
+
+=head1 SEE ALSO
+
+L<SOAP::Lite::Simple> is another module with very similar goals to
+this one.  Leo Lapworth, the author of that module, and I have briefly
+discussed merging the work into a single package, but have not made
+much progress.  If any users are interested in such a merger, let us know.
 
 =head1 METHODS
 
@@ -163,8 +180,11 @@ sub setWSDL
    {
       foreach my $method (keys %{$class})
       {
-         $self->{proxies}->{$method} = $class->{$method}->{endpoint}->value();
-         $self->{uris}->{$method} = $class->{$method}->{uri}->value();
+         my $endpoint = $class->{$method}->{endpoint};
+         # 'uri' was used thru SOAP::Lite v0.60, 'namespace' is used in v0.65+
+         my $namespace = $class->{$method}->{uri} ? $class->{$method}->{uri}->value() : $class->{$method}->{namespace};
+         $self->{proxies}->{$method} = $endpoint ? $endpoint->value() : undef;
+         $self->{uris}->{$method} = $namespace;
       }
    }
 
@@ -173,7 +193,8 @@ sub setWSDL
 
 =item $self->setURI($uri)
 
-Specifies the URI for the SOAP server.
+Specifies the URI for the SOAP server.  This is not needed if you are
+using WSDL.
 
 =cut
 
@@ -188,7 +209,8 @@ sub setURI
 
 =item $self->setProxy($proxy)
 
-Specifies the URL for the SOAP server.
+Specifies the URL for the SOAP server.  This is not needed if you are
+using WSDL.
 
 =cut
 
@@ -204,6 +226,8 @@ sub setProxy
 =item $self->setUserPass($username, $password)
 
 Specifies the C<$username> and C<$password> to use on the SOAP server.
+These values are stored until used via loginParams().  Most
+applications won't use this method.
 
 =cut
 

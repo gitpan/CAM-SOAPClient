@@ -1,5 +1,10 @@
 Revision history for Perl module CAM::SOAPClient
 
+1.16  21 Feb 2006
+      [FIXES]
+      - Missed one of the SOAP::Lite 0.66 API changes
+        Credit Don (aka ketone)
+
 1.15  17 Feb 2006
       [FIXES]
       - Accommodate SOAP::Lite 0.66 API changes

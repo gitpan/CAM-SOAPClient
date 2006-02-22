@@ -1,3 +1,6 @@
+#!perl -w
+use warnings;
+use strict;
 use Module::Build;
 Module::Build->new(
                    module_name => 'CAM::SOAPClient',
