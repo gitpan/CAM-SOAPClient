@@ -1,5 +1,11 @@
 Revision history for Perl module CAM::SOAPClient
 
+1.17  7 Apr 2006
+      [ENHANCEMENTS]
+      - Added getLastFault() method
+      [INTERNALS]
+      - Comply with Perl::Critic 0.15 standards      
+
 1.16  21 Feb 2006
       [FIXES]
       - Missed one of the SOAP::Lite 0.66 API changes

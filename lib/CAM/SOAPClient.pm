@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use SOAP::Lite;
 
-our $VERSION = '1.16';
+our $VERSION = '1.17';
 
 =for stopwords Lapworth subclassable wsdl
 
@@ -312,6 +312,40 @@ sub getLastFaultString
       return '(none)';
    }
 }
+
+=item $self->getLastFault()
+
+Creates a new SOAP::Fault instance from the last fault data, if any.  If
+there was no fault (as per the hadFault() method) then this returns
+undef.
+
+=cut
+
+sub getLastFault
+{
+   my $self = shift;
+
+   return if (!$self->hadFault());
+
+   my $som = $self->getLastSOM();
+   return if (!$som || !(ref $som) || !$som->fault());
+
+   my $code   = $som->can('faultcode')   ? $som->faultcode()   : 'Unknown';
+   my $string = $som->can('faultstring') ? $som->faultstring() : 'An unknown error has occurred';
+   my $detail = $som->can('faultdetail') ? $som->faultdetail() : undef;
+   if ($detail)
+   {
+      $detail = $detail->{data};
+   }
+
+   my $fault = SOAP::Fault->new(
+      faultcode   => $code,
+      faultstring => $string,
+      ($detail ? (faultdetail => SOAP::Data->name('data' => $detail)) : ()),
+   );
+   return $fault;
+}
+
 
 =item $self->call($method, undef, $key1 => $value1, $key2 => $value, ...)
 

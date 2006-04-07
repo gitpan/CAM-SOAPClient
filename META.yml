@@ -1,6 +1,6 @@
 ---
 name: CAM-SOAPClient
-version: 1.16
+version: 1.17
 author:
   - 'Clotho Advanced Media, I<cpan@clotho.com>'
 abstract: SOAP interaction tools
@@ -17,7 +17,7 @@ recommends:
 provides:
   CAM::SOAPClient:
     file: lib/CAM/SOAPClient.pm
-    version: 1.16
+    version: 1.17
 generated_by: Module::Build version 0.2706
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN
 { 
-   use Test::More tests => 11;
+   use Test::More tests => 14;
    use_ok('CAM::SOAPClient');
 }
 
@@ -48,6 +48,10 @@ SKIP:
    is_deeply(\@result, [], 'fault');
    isnt($c->getLastFaultCode(), '(none)', 'fault, faultcode');
    isnt($c->getLastFaultString(), '(none)', 'fault, faultstring');
+   my $fault = $c->getLastFault();
+   isnt($fault, undef, 'getLastFault');
+   isnt($fault->faultcode, undef, 'getLastFault');
+   isnt($fault->faultstring, undef, 'getLastFault');
 
    $c = CAM::SOAPClient->new($uri, $proxy);
    @result = $c->call('abort');
